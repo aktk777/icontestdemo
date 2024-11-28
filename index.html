@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <title>実験タスクデモ</title>
+    <style>
+        /* リセットと基本スタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        /* 共通ボタンスタイル */
+        button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+            outline: inherit;
+        }
+        /* アプリコンテナ */
+        #app-container {
+            display: flex; /* 表示をflexに設定 */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            min-height: 100vh;
+        }
+        #app-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+        /* 指示文 */
+        #instruction {
+            width: 400px;
+            margin: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #f8f8f8;
+            text-align: center;
+            word-break: keep-all;
+            line-height: 1.5;
+            flex-shrink: 0;
+        }
+        /* スマホフレーム */
+        .smartphone-frame {
+            position: relative;
+            width: 90%;
+            max-width: 325px;
+            aspect-ratio: 375 / 700;
+            max-height: 90vh;
+            background-color: #000;
+            border: 8px solid #333;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+        /* メイン画像エリア */
+        .main-image-area {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+        .main-image-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* トップバー */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #f8f8f8;
+            z-index: 2;
+        }
+        .top-bar h1 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .top-bar button {
+            color: #020202;
+            font-size: 16px;
+        }
+        /* 中央のツールバー */
+        .middle-toolbar {
+            position: absolute;
+            bottom: 40%;
+            left: 80%;
+            transform: translateX(-50%);
+            display: flex;
+            background-color: #f8f8f8;
+            padding: 8px;
+            border-radius: 10px;
+            z-index: 2;
+        }
+        .middle-toolbar .toolbar-button {
+            margin: 0 5px;
+        }
+        /* ボトムツールバー */
+        .bottom-toolbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px;
+            background-color: #f8f8f8;
+            z-index: 2;
+        }
+        .toolbar-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #020202;
+            font-size: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            position: relative;
+        }
+        .toolbar-button img {
+            width: 28px;
+            height: 28px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            margin-bottom: 3px;
+        }
+        /* 強調表示用のスタイル */
+        .highlight {
+            border: 2px solid rgb(230, 41, 41);
+            border-radius: 5px;
+        }
+        .select-here-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgb(240, 240, 30);
+            color: #020202;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        /* ボタンスタイル */
+        .taskchange-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 70px;
+        }
+        .taskchange-button:hover {
+            background-color: #0056b3;
+        }
+        /* メディアクエリ */
+        @media (max-width: 800px) {
+            #app-content {
+                flex-direction: column;
+            }
+            #instruction {
+                width: 100%;
+            }
+            .smartphone-frame {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- アプリコンテナ -->
+    <div id="app-container">
+        <div id="app-content">
+            <div id="instruction">
+                <p>操作の目標：</p>
+                <p id="instruction-text"></p>
+                <button id="reset-button" class="taskchange-button">はじめに戻る</button>
+            </div>
+            <div class="smartphone-frame">
+                <div class="main-image-area">
+                    <img src="icons/sample_image.jpg" alt="Editing Image" />
+                    <div class="top-bar">
+                        <button id="back-button">&#8592;</button>
+                        <h1></h1>
+                        <button id="save-button">保存</button>
+                    </div>
+                    <!-- 中央のツールバー -->
+                    <div class="middle-toolbar">
+                        <div class="toolbar-button" data-icon-id="copy">
+                            <img src="icons/copy.png" alt="copy" />
+                            <span></span>
+                        </div>
+                        <div class="toolbar-button" data-icon-id="delete">
+                            <img src="icons/delete.png" alt="delete" />
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="bottom-toolbar">
+                        <div class="toolbar-button" data-icon-id="replace">
+                            <img src="icons/replace.jpg" alt="replace" />
+                        </div>
+                        <div class="toolbar-button" data-icon-id="color">
+                            <img src="icons/color.jpg" alt="color" />
+                        </div>
+                        <div class="toolbar-button" data-icon-id="style">
+                            <img src="icons/style.jpg" alt="style" />
+                        </div>
+                        <div class="toolbar-button" data-icon-id="effect">
+                            <img src="icons/effect.jpg" alt="effect" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 不要な画面は削除または非表示 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const END_POINT = "https://script.google.com/macros/s/AKfycbyEO3CFIFSYHJbdTQ3rGn9F7aeyVkO2koYGNFgR2iTNbK4e5YtJn37QsiaN02j5Y5XI/exec"; // WebアプリのURLを設定
+            const SHEET_NO = 1;
+            const appContainer = document.getElementById("app-container");
+            const instructionText = document.getElementById("instruction-text");
+            const resetButton = document.getElementById("reset-button");
+            const toolbarButtons = document.querySelectorAll(".toolbar-button");
+
+            const tasks = [
+                { instruction: "画像を明るくしてください", correctIconId: "effect" },
+                { instruction: "選択した画像を複製してください", correctIconId: "copy" },
+                { instruction: "画像のスタイルを変更してください", correctIconId: "style" },
+                { instruction: "画像の色調を変更してください", correctIconId: "color" },
+                { instruction: "選択した画像を削除してください", correctIconId: "delete" },
+                { instruction: "画像を置き換えてください", correctIconId: "replace" },
+            ];
+
+            let trialCount = 0;
+            let trialCountInGroup = 0;
+            let currentConditionIndex = 0;
+            let startTime, targetTask;
+            let practiceMode = true;
+            const practiceTrialsPerGroup = tasks.length;
+            let practiceTrialsInGroup = 0;
+
+            const iconSets = {
+                1: {
+                    effect: "icons/effect.jpg",
+                    copy: "icons/copy.jpg",
+                    style: "icons/style.jpg",
+                    color: "icons/color.jpg",
+                    delete: "icons/delete.jpg",
+                    replace: "icons/replace.jpg",
+                },
+                2: {
+                    effect: "icons/effect_ai.jpg",
+                    copy: "icons/copy_ai.jpg",
+                    style: "icons/style_ai.jpg",
+                    color: "icons/color_ai.jpg",
+                    delete: "icons/delete_ai.jpg",
+                    replace: "icons/replace_ai.jpg",
+                },
+            };
+
+            let orderedConditions = [1, 2];
+            let taskSequences = {
+                practice: [],
+                main: [],
+            };
+            let taskIndex = {
+                practice: 0,
+                main: 0,
+            };
+
+            resetButton.addEventListener("click", resetExperiment);
+
+            function startExperiment() {
+                trialCount = 0;
+                trialCountInGroup = 0;
+                currentConditionIndex = 0;
+                practiceMode = true;
+                practiceTrialsInGroup = 0;
+                setupIconsForCondition();
+                setupTask();
+            }
+
+            function resetExperiment() {
+                trialCount = 0;
+                trialCountInGroup = 0;
+                currentConditionIndex = 0;
+                practiceMode = true;
+                practiceTrialsInGroup = 0;
+                setupIconsForCondition();
+                setupTask();
+            }
+
+            function setupIconsForCondition() {
+                const currentCondition = orderedConditions[currentConditionIndex];
+                const iconSet = iconSets[currentCondition];
+                toolbarButtons.forEach((button) => {
+                    const iconId = button.dataset.iconId;
+                    const iconUrl = iconSet[iconId];
+                    const img = button.querySelector("img");
+                    if (img && iconUrl) {
+                        img.src = iconUrl;
+                    }
+                });
+            }
+
+            function setupTask() {
+                const trialsPerGroup = tasks.length;
+
+                if (practiceMode && practiceTrialsInGroup >= practiceTrialsPerGroup) {
+                    practiceMode = false;
+                    trialCountInGroup = 0;
+                    taskSequences.main = [];
+                    taskIndex.main = 0;
+                    setupTask();
+                    return;
+                }
+
+                if (!practiceMode && trialCountInGroup >= trialsPerGroup) {
+                    currentConditionIndex = (currentConditionIndex + 1) % orderedConditions.length;
+                    practiceMode = true;
+                    practiceTrialsInGroup = 0;
+                    setupIconsForCondition();
+                    setupTask();
+                    return;
+                }
+
+                if (practiceMode) {
+                    if (practiceTrialsInGroup % tasks.length === 0) {
+                        taskSequences.practice = [...tasks].sort(() => Math.random() - 0.5);
+                        taskIndex.practice = 0;
+                    }
+                    targetTask = taskSequences.practice[taskIndex.practice];
+                    taskIndex.practice++;
+                    practiceTrialsInGroup++;
+                } else {
+                    if (trialCountInGroup % tasks.length === 0) {
+                        taskSequences.main = [...tasks].sort(() => Math.random() - 0.5);
+                        taskIndex.main = 0;
+                    }
+                    targetTask = taskSequences.main[taskIndex.main];
+                    taskIndex.main++;
+                    trialCountInGroup++;
+                    trialCount++;
+                }
+
+                instructionText.textContent = targetTask.instruction;
+                startTime = new Date();
+
+                toolbarButtons.forEach((button) => {
+                    button.removeEventListener("click", handleIconClick);
+                    button.addEventListener("click", handleIconClick);
+                });
+
+                toolbarButtons.forEach((button) => {
+                    button.classList.remove("highlight");
+                    const label = button.querySelector(".select-here-label");
+                    if (label) {
+                        button.removeChild(label);
+                    }
+                });
+
+                if (practiceMode) {
+                    const correctIconButton = document.querySelector(`.toolbar-button[data-icon-id="${targetTask.correctIconId}"]`);
+                    if (correctIconButton) {
+                        correctIconButton.classList.add("highlight");
+                        let label = document.createElement("div");
+                        label.className = "select-here-label";
+                        label.textContent = "ここを選択";
+                        correctIconButton.appendChild(label);
+                    }
+                }
+            }
+
+            function handleIconClick(event) {
+                const endTime = new Date();
+                const timeTaken = (endTime - startTime) / 1000;
+                const clickedIconId = event.currentTarget.dataset.iconId;
+                const correct = clickedIconId === targetTask.correctIconId;
+
+                if (!practiceMode) {
+                    const resultData = {
+                        sheetNo: SHEET_NO,
+                        data: [
+                            {
+                                trial: trialCount,
+                                instruction: targetTask.instruction,
+                                condition: orderedConditions[currentConditionIndex],
+                                correctness: correct ? "correct" : "incorrect",
+                                reactionTime: timeTaken,
+                            },
+                        ],
+                    };
+                    sendResultToGoogleSheets(resultData);
+                }
+
+                setupTask();
+            }
+
+            function sendResultToGoogleSheets(data) {
+                fetch(END_POINT, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log("Success!", data);
+                    })
+                    .catch((error) => console.error("Error!", error.message));
+            }
+
+            startExperiment();
+        });
+    </script>
+</body>
+</html>
